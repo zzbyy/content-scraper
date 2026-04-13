@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Content Scraper Skill — remote installer (works with private repos via gh CLI)
+# Content Scraper Skill Installer
 # Usage:
-#   gh repo clone zzbyy/content-scraper /tmp/cs && /tmp/cs/install.sh && rm -rf /tmp/cs
-#   ... install.sh claude      # Claude Code only
-#   ... install.sh openclaw    # OpenClaw only
+#   curl -fsSL https://raw.githubusercontent.com/zzbyy/content-scraper/main/install.sh | bash
+#   curl -fsSL ... | bash -s -- claude      # Claude Code only
+#   curl -fsSL ... | bash -s -- openclaw    # OpenClaw only
 
+REPO="zzbyy/content-scraper"
+BRANCH="main"
+BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 MODE="${1:-all}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
 GREEN='\033[0;32m'; YELLOW='\033[0;33m'; RED='\033[0;31m'; NC='\033[0m'
 ok()   { printf "${GREEN}[OK]${NC} %s\n" "$1"; }
 warn() { printf "${YELLOW}[!!]${NC} %s\n" "$1"; }
 fail() { printf "${RED}[ERR]${NC} %s\n" "$1"; exit 1; }
+
+fetch() { curl -fsSL "$1" || fail "Failed to download $1"; }
 
 # ── Python dependencies ─────────────────────────────────────────────
 install_deps() {
@@ -35,18 +39,14 @@ install_deps() {
 
 # ── Claude Code ──────────────────────────────────────────────────────
 install_claude() {
-  local src="$SCRIPT_DIR/claude-code"
   local dest="$HOME/.claude/skills/content-scraper-skill"
-
-  [ -d "$src" ] || fail "claude-code/ dir not found. Run from the repo root."
-
   echo "Installing Claude Code skill -> $dest"
   mkdir -p "$dest/references" "$dest/scripts"
 
-  cp "$src/SKILL.md"                          "$dest/SKILL.md"
-  cp "$src/scripts/content_scraper_agent.py"  "$dest/scripts/content_scraper_agent.py"
-  for ref in "$src"/references/*.md; do
-    cp "$ref" "$dest/references/"
+  fetch "${BASE}/claude-code/SKILL.md"                          > "$dest/SKILL.md"
+  fetch "${BASE}/claude-code/scripts/content_scraper_agent.py"  > "$dest/scripts/content_scraper_agent.py"
+  for ref in douyin jike wechat x-twitter xiaohongshu; do
+    fetch "${BASE}/claude-code/references/${ref}.md"            > "$dest/references/${ref}.md"
   done
   chmod +x "$dest/scripts/content_scraper_agent.py"
   ok "Claude Code skill installed"
@@ -54,16 +54,12 @@ install_claude() {
 
 # ── OpenClaw ─────────────────────────────────────────────────────────
 install_openclaw() {
-  local src="$SCRIPT_DIR/openclaw"
   local dest="$HOME/.openclaw/skills/content-scraper"
-
-  [ -d "$src" ] || fail "openclaw/ dir not found. Run from the repo root."
-
   echo "Installing OpenClaw skill -> $dest"
   mkdir -p "$dest/scripts"
 
-  cp "$src/SKILL.md"                          "$dest/SKILL.md"
-  cp "$src/scripts/content_scraper_agent.py"  "$dest/scripts/content_scraper_agent.py"
+  fetch "${BASE}/openclaw/SKILL.md"                             > "$dest/SKILL.md"
+  fetch "${BASE}/openclaw/scripts/content_scraper_agent.py"     > "$dest/scripts/content_scraper_agent.py"
   chmod +x "$dest/scripts/content_scraper_agent.py"
   ok "OpenClaw skill installed"
 }
@@ -77,7 +73,7 @@ case "$MODE" in
   claude)   install_deps; echo; install_claude ;;
   openclaw) install_deps; echo; install_openclaw ;;
   *)
-    echo "Usage: ./install.sh [all|claude|openclaw]"
+    echo "Usage: curl -fsSL <url>/install.sh | bash -s -- [all|claude|openclaw]"
     exit 1 ;;
 esac
 

@@ -18,19 +18,19 @@ Works with **Claude Code** and **OpenClaw**. No personal API tokens needed.
 **Both Claude Code + OpenClaw:**
 
 ```bash
-gh repo clone zzbyy/content-scraper /tmp/cs && /tmp/cs/install.sh && rm -rf /tmp/cs
+curl -fsSL https://raw.githubusercontent.com/zzbyy/content-scraper/main/install.sh | bash
 ```
 
 **Claude Code only:**
 
 ```bash
-gh repo clone zzbyy/content-scraper /tmp/cs && /tmp/cs/install.sh claude && rm -rf /tmp/cs
+curl -fsSL https://raw.githubusercontent.com/zzbyy/content-scraper/main/install.sh | bash -s -- claude
 ```
 
 **OpenClaw only:**
 
 ```bash
-gh repo clone zzbyy/content-scraper /tmp/cs && /tmp/cs/install.sh openclaw && rm -rf /tmp/cs
+curl -fsSL https://raw.githubusercontent.com/zzbyy/content-scraper/main/install.sh | bash -s -- openclaw
 ```
 
 Playwright (for Douyin only) is not auto-installed. To add it:
